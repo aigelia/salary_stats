@@ -39,9 +39,9 @@ def search_vacancies_hh(vacancy_name):
     return found, vacancies
 
 
-def extract_salary_hh(vacancy_salary):
+def extract_salary_hh(salary):
     """Extracts salary info from a single HeadHunter vacancy salary field."""
-    return vacancy_salary if vacancy_salary else None
+    return salary if salary else None
 
 
 def search_vacancies_sj(vacancy_name, api_key):
@@ -89,52 +89,52 @@ def main():
     vacancies_names = get_vacancies_names()
     api_key = config("SUPERJOB_TOKEN")
 
-    hh_average_salaries = {}
+    hh_averages = {}
     for vacancy_name in vacancies_names:
         print(f"Processing data (HeadHunter): {vacancy_name}")
         try:
             found, vacancies = search_vacancies_hh(vacancy_name)
-            salaries_raw = [extract_salary_hh(vacancy.get("salary")) for vacancy in vacancies]
-            salaries_filtered = [s for s in salaries_raw if s]
-            salary_list = predict_rub_salary(salaries_filtered)
-            average, count = calculate_average_salary(salary_list)
-            hh_average_salaries[vacancy_name] = {
+            raw_salaries = [extract_salary_hh(vacancy.get("salary")) for vacancy in vacancies]
+            filtered_salaries = [salary for salary in raw_salaries if salary]
+            salaries = predict_rub_salary(filtered_salaries)
+            average, count = calculate_average_salary(salaries)
+            hh_averages[vacancy_name] = {
                 "vacancies_found": found,
                 "vacancies_processed": count,
                 "average_salary": average
             }
         except requests.exceptions.RequestException as e:
             print(f"Error while requesting HH for {vacancy_name}: {e}")
-            hh_average_salaries[vacancy_name] = {
+            hh_averages[vacancy_name] = {
                 "vacancies_found": 0,
                 "vacancies_processed": 0,
                 "average_salary": 0
             }
 
-    sj_average_salaries = {}
+    sj_averages = {}
     for vacancy_name in vacancies_names:
         print(f"Processing data (SuperJob): {vacancy_name}")
         try:
             found, vacancies = search_vacancies_sj(vacancy_name, api_key)
-            salaries_raw = [extract_salary_sj(v.get("payment_from"), v.get("payment_to")) for v in vacancies]
-            salaries_filtered = [s for s in salaries_raw if s]
-            salary_list = predict_rub_salary(salaries_filtered)
-            average, count = calculate_average_salary(salary_list)
-            sj_average_salaries[vacancy_name] = {
+            raw_salaries = [extract_salary_sj(v.get("payment_from"), v.get("payment_to")) for v in vacancies]
+            filtered_salaries = [salary for salary in raw_salaries if salary]
+            salaries = predict_rub_salary(filtered_salaries)
+            average, count = calculate_average_salary(salaries)
+            sj_averages[vacancy_name] = {
                 "vacancies_found": found,
                 "vacancies_processed": count,
                 "average_salary": average
             }
         except requests.exceptions.RequestException as e:
             print(f"Error while requesting SJ for {vacancy_name}: {e}")
-            sj_average_salaries[vacancy_name] = {
+            sj_averages[vacancy_name] = {
                 "vacancies_found": 0,
                 "vacancies_processed": 0,
                 "average_salary": 0
             }
 
-    print_salary_table("HeadHunter Moscow", hh_average_salaries)
-    print_salary_table("SuperJob Moscow", sj_average_salaries)
+    print_salary_table("HeadHunter Moscow", hh_averages)
+    print_salary_table("SuperJob Moscow", sj_averages)
 
 
 if __name__ == "__main__":
