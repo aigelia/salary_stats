@@ -17,7 +17,7 @@ def predict_rub_salaries(salary_entries):
 
 def calculate_average_salary(salaries):
     count = len(salaries)
-    if count == 0:
+    if not count:
         return 0, 0
     average = int(sum(salaries) / count)
     return average, count
