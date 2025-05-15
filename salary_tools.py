@@ -1,8 +1,8 @@
-def predict_rub_salary(salary_info):
+def predict_rub_salary(salary_entries):
     result = []
-    for item in salary_info:
-        min_salary = item.get("from")
-        max_salary = item.get("to")
+    for salary_entry in salary_entries:
+        min_salary = salary_entry.get("from")
+        max_salary = salary_entry.get("to")
         if min_salary and max_salary:
             average = (min_salary + max_salary) / 2
         elif min_salary:

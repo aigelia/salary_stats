@@ -15,11 +15,11 @@ def get_vacancies_names():
     ]
 
 
-def print_salary_table(title, data_dict):
+def print_salary_table(title, language_stats):
     table_data = [
         ["Language", "Found vacancies", "Processed", "Average salary"]
     ]
-    for language, stats in data_dict.items():
+    for language, stats in language_stats.items():
         row = [
             language,
             str(stats["vacancies_found"]),
