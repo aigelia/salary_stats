@@ -18,11 +18,10 @@ This project collects and compares salary statistics for popular programming lan
     SUPERJOB_TOKEN=your_token_here
     ```
 
-3. After these two steps, you can run the scripts:
+3. After these two steps, you can run the script:
 
     ```bash
-    python hh_stats.py
-    python superjob_stats.py
+    python salary_stats.py
     ```
 
 ## Project Goals
