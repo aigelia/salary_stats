@@ -1,9 +1,13 @@
 import requests
-
 from decouple import config
 
 from vacancy_common import get_vacancies_names, print_salary_table
 from salary_tools import predict_rub_salary, calculate_average_salary
+
+MOSCOW_AREA_ID = "1"
+SEARCH_PERIOD_DAYS = 30
+VACANCIES_PER_PAGE = 100
+EXCLUDE_NO_AGREEMENT = 1
 
 
 def search_vacancies_hh(vacancy_name):
@@ -14,20 +18,23 @@ def search_vacancies_hh(vacancy_name):
     }
     params = {
         "text": vacancy_name,
-        "area": "1",
-        "period": 30,
-        "per_page": 100,
+        "area": MOSCOW_AREA_ID,
+        "period": SEARCH_PERIOD_DAYS,
+        "per_page": VACANCIES_PER_PAGE,
         "page": 0
     }
+
     all_items = []
     while True:
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
         data = response.json()
         all_items.extend(data.get("items", []))
+
         if params["page"] >= data.get("pages", 0) - 1:
             break
         params["page"] += 1
+
     return {
         "found": data.get("found", 0),
         "items": all_items
@@ -45,15 +52,17 @@ def search_vacancies_sj(vacancy_name, api_key):
     headers = {
         "X-Api-App-Id": api_key,
     }
+
     all_objects = []
     page = 0
+
     while True:
         params = {
             "keyword": vacancy_name,
-            "town": "Москва",
-            "no_agreement": 1,
+            "town": "Moscow",
+            "no_agreement": EXCLUDE_NO_AGREEMENT,
             "not_archive": True,
-            "count": 100,
+            "count": VACANCIES_PER_PAGE,
             "page": page
         }
 
@@ -82,6 +91,7 @@ def extract_salaries_sj(vacancy_data):
 
 
 def main():
+    """Main function to run vacancy stats collection and output tables."""
     vacancies_names = get_vacancies_names()
     api_key = config("SUPERJOB_TOKEN")
 
@@ -100,7 +110,7 @@ def main():
                 "average_salary": average
             }
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при запросе HH для {vacancy_name}: {e}")
+            print(f"Error while requesting HH for {vacancy_name}: {e}")
             hh_average_salaries[vacancy_name] = {
                 "vacancies_found": 0,
                 "vacancies_processed": 0,
@@ -122,7 +132,7 @@ def main():
                 "average_salary": average
             }
         except requests.exceptions.RequestException as e:
-            print(f"Ошибка при запросе SJ для {vacancy_name}: {e}")
+            print(f"Error while requesting SJ for {vacancy_name}: {e}")
             sj_average_salaries[vacancy_name] = {
                 "vacancies_found": 0,
                 "vacancies_processed": 0,
