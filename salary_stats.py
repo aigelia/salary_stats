@@ -82,11 +82,11 @@ def extract_salaries_sj(vacancy_data):
 
 
 def main():
-    vacancy_names = get_vacancies_names()
+    vacancies_names = get_vacancies_names()
     api_key = config("SUPERJOB_TOKEN")
 
     hh_average_salaries = {}
-    for vacancy_name in vacancy_names:
+    for vacancy_name in vacancies_names:
         print(f"Processing data (HeadHunter): {vacancy_name}")
         try:
             api_response = search_vacancies_hh(vacancy_name)
@@ -108,7 +108,7 @@ def main():
             }
 
     sj_average_salaries = {}
-    for vacancy_name in vacancy_names:
+    for vacancy_name in vacancies_names:
         print(f"Processing data (SuperJob): {vacancy_name}")
         try:
             api_response = search_vacancies_sj(vacancy_name, api_key)
