@@ -24,23 +24,24 @@ def search_vacancies_hh(vacancy_name):
         "page": 0
     }
 
-    all_vacancies = []
+    vacancies = []
     while True:
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
-        response_data = response.json()
-        all_vacancies.extend(response_data.get("items", []))
+        found = response.json().get("found", 0)
+        items = response.json().get("items", [])
+        vacancies.extend(items)
 
-        if params["page"] >= response_data.get("pages", 0) - 1:
+        if params["page"] >= response.json().get("pages", 0) - 1:
             break
         params["page"] += 1
 
-    return response_data.get("found", 0), all_vacancies
+    return found, vacancies
 
 
-def extract_salaries_hh(vacancies_list):
-    """Extracts salary data from HeadHunter vacancy results."""
-    return [vacancy["salary"] for vacancy in vacancies_list if vacancy.get("salary")]
+def extract_salary_hh(vacancy_salary):
+    """Extracts salary info from a single HeadHunter vacancy salary field."""
+    return vacancy_salary if vacancy_salary else None
 
 
 def search_vacancies_sj(vacancy_name, api_key):
@@ -50,7 +51,7 @@ def search_vacancies_sj(vacancy_name, api_key):
         "X-Api-App-Id": api_key,
     }
 
-    all_vacancies = []
+    vacancies = []
     page = 0
 
     while True:
@@ -65,23 +66,22 @@ def search_vacancies_sj(vacancy_name, api_key):
 
         response = requests.get(url, headers=headers, params=params)
         response.raise_for_status()
-        response_data = response.json()
-        all_vacancies.extend(response_data.get("objects", []))
+        total = response.json().get("total", 0)
+        objects = response.json().get("objects", [])
+        vacancies.extend(objects)
 
-        if not response_data.get("more"):
+        if not response.json().get("more"):
             break
         page += 1
 
-    return response_data.get("total", 0), all_vacancies
+    return total, vacancies
 
 
-def extract_salaries_sj(vacancies_list):
-    """Extracts salary data from SuperJob vacancy results."""
-    return [
-        {"from": vacancy.get("payment_from"), "to": vacancy.get("payment_to")}
-        for vacancy in vacancies_list
-        if vacancy.get("payment_from") or vacancy.get("payment_to")
-    ]
+def extract_salary_sj(payment_from, payment_to):
+    """Extracts and combines payment info from SuperJob vacancy fields."""
+    if payment_from or payment_to:
+        return {"from": payment_from, "to": payment_to}
+    return None
 
 
 def main():
@@ -93,12 +93,13 @@ def main():
     for vacancy_name in vacancies_names:
         print(f"Processing data (HeadHunter): {vacancy_name}")
         try:
-            vacancies_found, vacancies_list = search_vacancies_hh(vacancy_name)
-            salaries_raw = extract_salaries_hh(vacancies_list)
-            salary_list = predict_rub_salary(salaries_raw)
+            found, vacancies = search_vacancies_hh(vacancy_name)
+            salaries_raw = [extract_salary_hh(vacancy.get("salary")) for vacancy in vacancies]
+            salaries_filtered = [s for s in salaries_raw if s]
+            salary_list = predict_rub_salary(salaries_filtered)
             average, count = calculate_average_salary(salary_list)
             hh_average_salaries[vacancy_name] = {
-                "vacancies_found": vacancies_found,
+                "vacancies_found": found,
                 "vacancies_processed": count,
                 "average_salary": average
             }
@@ -114,12 +115,13 @@ def main():
     for vacancy_name in vacancies_names:
         print(f"Processing data (SuperJob): {vacancy_name}")
         try:
-            vacancies_found, vacancies_list = search_vacancies_sj(vacancy_name, api_key)
-            salaries_raw = extract_salaries_sj(vacancies_list)
-            salary_list = predict_rub_salary(salaries_raw)
+            found, vacancies = search_vacancies_sj(vacancy_name, api_key)
+            salaries_raw = [extract_salary_sj(v.get("payment_from"), v.get("payment_to")) for v in vacancies]
+            salaries_filtered = [s for s in salaries_raw if s]
+            salary_list = predict_rub_salary(salaries_filtered)
             average, count = calculate_average_salary(salary_list)
             sj_average_salaries[vacancy_name] = {
-                "vacancies_found": vacancies_found,
+                "vacancies_found": found,
                 "vacancies_processed": count,
                 "average_salary": average
             }
