@@ -2,7 +2,7 @@ import requests
 from decouple import config
 
 from vacancy_common import get_vacancies_names, print_salary_table
-from salary_tools import predict_rub_salary, calculate_average_salary
+from salary_tools import predict_rub_salaries, calculate_average_salary
 
 MOSCOW_AREA_ID = "1"
 SEARCH_PERIOD_DAYS = 30
@@ -96,7 +96,7 @@ def main():
             found, vacancies = search_vacancies_hh(vacancy_name)
             raw_salaries = [extract_salary_hh(vacancy.get("salary")) for vacancy in vacancies]
             filtered_salaries = [salary for salary in raw_salaries if salary]
-            salaries = predict_rub_salary(filtered_salaries)
+            salaries = predict_rub_salaries(filtered_salaries)
             average, count = calculate_average_salary(salaries)
             hh_averages[vacancy_name] = {
                 "vacancies_found": found,
@@ -118,7 +118,7 @@ def main():
             found, vacancies = search_vacancies_sj(vacancy_name, api_key)
             raw_salaries = [extract_salary_sj(v.get("payment_from"), v.get("payment_to")) for v in vacancies]
             filtered_salaries = [salary for salary in raw_salaries if salary]
-            salaries = predict_rub_salary(filtered_salaries)
+            salaries = predict_rub_salaries(filtered_salaries)
             average, count = calculate_average_salary(salaries)
             sj_averages[vacancy_name] = {
                 "vacancies_found": found,

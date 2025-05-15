@@ -1,4 +1,4 @@
-def predict_rub_salary(salary_entries):
+def predict_rub_salaries(salary_entries):
     result = []
     for salary_entry in salary_entries:
         min_salary = salary_entry.get("from")
