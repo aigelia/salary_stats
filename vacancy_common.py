@@ -1,7 +1,7 @@
 from terminaltables import AsciiTable
 
 
-def get_vacancy_names():
+def get_vacancies_names():
     return [
         "TypeScript",
         "Swift",

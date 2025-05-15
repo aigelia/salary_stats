@@ -2,7 +2,7 @@ import requests
 
 from decouple import config
 
-from vacancy_common import get_vacancy_names, print_salary_table
+from vacancy_common import get_vacancies_names, print_salary_table
 from salary_tools import predict_rub_salary, calculate_average_salary
 
 
@@ -82,7 +82,7 @@ def extract_salaries_sj(vacancy_data):
 
 
 def main():
-    vacancy_names = get_vacancy_names()
+    vacancy_names = get_vacancies_names()
     api_key = config("SUPERJOB_TOKEN")
 
     hh_average_salaries = {}
